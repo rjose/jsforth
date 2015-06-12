@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="/static/scripts/jsforth.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function(event) {
+      setTimeout(function() {
+         Forth.Load("/vocab/ssk/main");
+      }, 0);
+      });
+
+    </script>
+  </head>
+
+  <body>
+    <h1 js-forth="TITLE RENDER" onclick="Forth.TeamTasksRender()">Page title</h1>
+
+    <div js-forth="TEAMS TASKS RENDER">
+      <h2 class="team_name"></h2>
+      <ul class="staff">
+	<li class="person_name">
+	  <ul class="tasks">
+	    <li class="task"><a href=""></a></li>
+	  </ul>
+	</li>
+      </ul>
+    </div>
+
+    <ul js-forth="TASKS RENDER">
+      <li class="task">Task name</li>
+    </ul>
+
+    <div js-forth="TASKS RENDER">
+      <p class="task">Task name</li>
+    </div>
+
+  </body>
+</html>

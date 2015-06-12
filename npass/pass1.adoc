@@ -1,0 +1,19 @@
+= Pass 1: Define forth state
+
+The goal is to define where the stack, return stack, dictionary, and variables are
+
+== Tasks
+- [x] Create Makefile to run server to serve files
+- [ ] Create frame for jsforth.js file
+- [ ] Define function to initialize state
+- [ ] Define function to return interpreter
+
+
+== Status
+- Effort spent: h
+- Effort left: 0h
+- Initial estimate: 2h
+
+== Log
+
+=== Saturday, 04/25/2015
