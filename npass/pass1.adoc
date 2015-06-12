@@ -4,9 +4,9 @@ The goal is to define where the stack, return stack, dictionary, and variables a
 
 == Tasks
 - [x] Create Makefile to run server to serve files
-- [ ] Create frame for jsforth.js file
-- [ ] Define function to initialize state
-- [ ] Define function to return interpreter
+- [x] Create frame for jsforth.js file
+- [x] Define function to initialize state
+- [x] Define function to return interpreter
 
 
 == Status
