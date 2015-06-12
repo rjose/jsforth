@@ -1,0 +1,16 @@
+= Pass 3: Interpret word
+
+Looks up word and executes entry if found, otherwise try pushing number onto stack
+
+== Tasks
+- [x] Create an interpret function
+
+
+== Status
+- Effort spent: h
+- Effort left: 0h
+- Initial estimate: 2h
+
+== Log
+
+=== Saturday, 04/25/2015
