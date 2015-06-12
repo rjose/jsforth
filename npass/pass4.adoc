@@ -1,0 +1,19 @@
+= Pass 4: Define variables and constants
+
+This defines VARIABLE and CONSTANT
+
+== Tasks
+- [x] Define CONSTANT
+- [x] Abort if stack underflow
+- [x] Define VARIABLE
+- [x] Define @ and !
+
+
+== Status
+- Effort spent: h
+- Effort left: 0h
+- Initial estimate: 2h
+
+== Log
+
+=== Saturday, 04/25/2015
