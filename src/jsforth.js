@@ -231,6 +231,41 @@ $f = (function makeInterpreter() {
 	    }
 	};
 
+	// Define ":"
+	m_dictionary[":"] = {
+	    code: function() {
+		read_word();                                // Get def's name
+		var name = m_cur_word;
+		m_cur_definition = {
+		    code: function() {
+			return execute_definition(name);
+		    },
+		    parameters: []                          // Holds compiled instructions
+		}
+		while(1) {                                  // Compile all words in definition
+		    var status = compile_word();
+		    if (status == 1) {                      // If end of definition
+			break;                              // then break out of loop
+		    }
+		    if (status == -1) {                     // If abort happened during compile_word
+			return -1;                          // then abort out as well
+		    }
+		}
+
+		m_dictionary[name] = m_cur_definition;      // Store new definition
+		return 0;
+	    }
+	};
+
+	// Define ";"
+	m_dictionary[";"] = {
+	    code: function() {
+		m_return_stack.pop();                       // Make previous context the current one
+		return 1;                                   // Return 1 to indicate an EXIT
+	    }
+	};
+
+
 	// Define "IF"
 	m_dictionary["IF"] = {
 	    code: function() {
@@ -342,76 +377,6 @@ $f = (function makeInterpreter() {
 		return 0;
 	    }
 	};
-
-	// Define ":"
-	m_dictionary[":"] = {
-	    code: function() {
-		read_word();                                // Get def's name
-		var name = m_cur_word;
-		m_cur_definition = {
-		    code: function() {
-			return execute_definition(name);
-		    },
-		    parameters: []                          // Holds compiled instructions
-		}
-		while(1) {                                  // Compile all words in definition
-		    var status = compile_word();
-		    if (status == 1) {                      // If end of definition
-			break;                              // then break out of loop
-		    }
-		    if (status == -1) {                     // If abort happened during compile_word
-			return -1;                          // then abort out as well
-		    }
-		}
-
-		m_dictionary[name] = m_cur_definition;      // Store new definition
-		return 0;
-	    }
-	};
-
-	// Define ";"
-	m_dictionary[";"] = {
-	    code: function() {
-		m_return_stack.pop();                       // Make previous context the current one
-		return 1;                                   // Return 1 to indicate an EXIT
-	    }
-	};
-
-
-	// Define ".state"
-	m_dictionary[".state"] = {
-	    code: function() {                              // Prints interpreter state
-		var state = {
-		    dictionary: m_dictionary,
-		    stack: m_stack,
-		    return_stack: m_return_stack
-		};
-		console.log(state);
-		return 0;
-	    }
-	};
-
-	// Define ".s"
-	m_dictionary[".s"] = {
-	    code: function() {
-		console.log(m_stack);
-		return 0;
-	    }
-	};
-
-	// Define "."
-	m_dictionary["."] = {
-	    code: function() {
-		if (m_stack.length == 0) {
-		    abort("Stack underflow");
-		    return -1;
-		}
-		var value = m_stack.pop();
-		console.log(value);
-		return 0;
-	    }
-	};
-
     }
     define_builtins();
 
@@ -421,5 +386,76 @@ $f = (function makeInterpreter() {
 	m_input_index = 0;                                  // Start at the beginning of string
 	while (interpret_next_word()) {};                   // Interpret while there are words in string
     }
+
+    // Expose internals for extension
+    result.dictionary = m_dictionary;
+    result.stack = m_stack;
+    result.return_stack = m_return_stack;
     return result;
 })();
+
+
+
+//==========================================================
+// API for creating forth words in javascript
+//==========================================================
+JSForth = (function() {
+    function DefineWord(name, func) {
+	$f.dictionary[name] = {
+	    code: func
+	}
+    }
+
+    var result = {
+	DefineWord: DefineWord
+    };
+    return result;
+})();
+
+//==========================================================
+// Define common words
+//==========================================================
+
+//------------------------------------------------------------------------------
+// Prints state of forth interpreter
+//------------------------------------------------------------------------------
+JSForth.DefineWord(".state", function() {
+    var state = {
+	dictionary: $f.dictionary,
+	stack: $f.stack,
+	return_stack: $f.return_stack
+    };
+    console.log(state);
+    return 0;
+});
+
+
+//------------------------------------------------------------------------------
+// Prints forth stack
+//------------------------------------------------------------------------------
+JSForth.DefineWord(".s", function() {
+    console.log($f.stack);
+    return 0;
+});
+
+
+//------------------------------------------------------------------------------
+// Pops value from forth stack and prints it
+//------------------------------------------------------------------------------
+JSForth.DefineWord(".", function() {
+    if ($f.stack.length == 0) {
+	abort("Stack underflow");
+	return -1;
+    }
+    var value = $f.stack.pop();
+    console.log(value);
+    return 0;
+});
+
+
+JSForth.DefineWord("-", function() {
+    var r = $f.stack.pop();
+    var l = $f.stack.pop();
+    var difference = l - r;
+    $f.stack.push(difference);
+});
