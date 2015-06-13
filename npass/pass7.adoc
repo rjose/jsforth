@@ -1,0 +1,17 @@
+= Pass 7: Create conditions
+
+Create conditions (need to handle nested conditions, too)
+
+== Tasks
+- [x] Define IF and THEN
+- [ ] Define ELSE
+
+
+== Status
+- Effort spent: h
+- Effort left: 0h
+- Initial estimate: 2h
+
+== Log
+
+=== Saturday, 04/25/2015

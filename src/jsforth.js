@@ -112,9 +112,9 @@ $f = (function makeInterpreter() {
     // Compiles word into current definition
     //
     // Returns the following:
-    //   * If ";", then 0
+    //   * If ";", then 1
     //   * If abort, then -1
-    //   * Otherwise, 1
+    //   * Otherwise, 0
     //
     // NOTE: This should only be called by ":".
     //---------------------------------------------------------------------------
@@ -129,12 +129,12 @@ $f = (function makeInterpreter() {
 	var entry = m_dictionary[m_cur_word];               // Look up entry in dictionary
 
 	if (entry && entry.immediate) {                     // If an immediate word, then execute it
-	    entry.code();
+	    return entry.code();
 	}
 	else if (entry) {                                   // If just an entry, add it to the def's params
 	    m_cur_definition.parameters.push(m_cur_word);
 	    if (m_cur_word == ";") {                        // Also, if ";", then definition is complete
-		return 0;
+		return 1;
 	    }
 	}
 	else {                                              // See if word is a number
@@ -146,7 +146,7 @@ $f = (function makeInterpreter() {
 	    m_cur_definition.parameters.push(m_cur_word);
 	}
 
-	return 1;
+	return 0;
     }
 
     //---------------------------------------------------------------------------
@@ -169,7 +169,16 @@ $f = (function makeInterpreter() {
 	    var top_index = m_return_stack.length-1;
 	    var top_context = m_return_stack[top_index];
 	    var next_word = m_dictionary[top_context.def_name].parameters[top_context.ip];
-	    var status = interpret(next_word);
+
+	    var status;
+	    if (next_word.pseudo_entry) {                   // If a pseudo entry, then execute directly
+		status = next_word.code(next_word.parameters);
+	    }
+	    else {
+		status = interpret(next_word);
+	    }
+
+	    // Check status
 	    if (status == 0) {
 		m_return_stack[top_index].ip++;             // Advance to next instruction
 	    }
@@ -226,6 +235,45 @@ $f = (function makeInterpreter() {
 	    }
 	};
 
+	// Define "IF"
+	m_dictionary["IF"] = {
+	    code: function() {
+		var jmp_false_entry = {
+		    pseudo_entry: true,
+		    code: function(params) {                // params will be the entry's parameters
+			if (m_stack.length == 0) {
+			    abort("Stack underflow");
+			    return -1;
+			}
+
+			var value = m_stack.pop();          // Get value from stack
+			if (!value) {                       // If false, set ip to value specified in params
+			    var top_index = m_return_stack.length-1;
+			    m_return_stack[top_index].ip = params[0] - 1;  // Will be incremented when executed
+			}
+			return 0;
+		    },
+		    parameters: []                          // Will hold index to jump to if false
+		};
+		m_cur_definition.parameters.push(jmp_false_entry);
+		var cur_params = m_cur_definition.parameters;
+		m_return_stack.push(cur_params.length-1);   // Note that entry needs to be filled out
+		return 0;
+	    },
+	    immediate: true
+	};
+
+	// Define "THEN"
+	m_dictionary["THEN"] = {
+	    code: function() {
+		var index = m_return_stack.pop();           // Get index of pseudo entry to tie up
+		var next_index = m_cur_definition.parameters.length;
+		m_cur_definition.parameters[index].parameters.push(next_index);
+		return 0;
+	    },
+	    immediate: true
+	};
+
 	// Define "@"
 	m_dictionary["@"] = {
 	    code: function() {
@@ -278,7 +326,7 @@ $f = (function makeInterpreter() {
 		}
 		while(1) {                                  // Compile all words in definition
 		    var status = compile_word();
-		    if (status == 0) {                      // If end of definition
+		    if (status == 1) {                      // If end of definition
 			break;                              // then break out of loop
 		    }
 		    if (status == -1) {                     // If abort happened during compile_word
