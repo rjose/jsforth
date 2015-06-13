@@ -263,6 +263,40 @@ $f = (function makeInterpreter() {
 	    immediate: true
 	};
 
+
+	// Define "ELSE"
+	m_dictionary["ELSE"] = {
+	    code: function() {
+		var index = m_return_stack.pop();           // Get index of pseudo entry to tie up
+
+		// Add entry to jmp over the ELSE branch when executing the true branch
+		var jmp_entry = {
+		    pseudo_entry: true,
+		    code: function(params) {                // params will be the entry's parameters
+			if (m_stack.length == 0) {
+			    abort("Stack underflow");
+			    return -1;
+			}
+
+			var top_index = m_return_stack.length-1;
+			m_return_stack[top_index].ip = params[0] - 1;  // Will be incremented when executed
+			return 0;
+		    },
+		    parameters: []                          // Will hold index to jump to if false
+		};
+		m_cur_definition.parameters.push(jmp_entry);
+		var cur_params = m_cur_definition.parameters;
+		m_return_stack.push(cur_params.length-1);   // Note that entry needs to be filled out
+
+		// Tie up pseudo entry
+		var next_index = m_cur_definition.parameters.length;
+		m_cur_definition.parameters[index].parameters.push(next_index);
+
+		return 0;
+	    },
+	    immediate: true
+	};
+
 	// Define "THEN"
 	m_dictionary["THEN"] = {
 	    code: function() {
@@ -383,9 +417,7 @@ $f = (function makeInterpreter() {
 	};
 
     }
-
     define_builtins();
-
 
     // jsforth intepreter
     var MAX_ITERATIONS = 5000;                              // Max words in string
