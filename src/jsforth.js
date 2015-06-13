@@ -29,9 +29,7 @@ $f = (function makeInterpreter() {
     //---------------------------------------------------------------------------
     function read_word() {
 	m_cur_word = "";                                    // Reset m_cur_word
-
-	// Skip whitespace
-	while(m_input_index < m_input.length) {
+	while(m_input_index < m_input.length) {             // Skip whitespace
 	    var ch = m_input[m_input_index];
 	    if (is_whitespace(ch)) {
 		m_input_index++;
@@ -40,9 +38,7 @@ $f = (function makeInterpreter() {
 		break;
 	    }
 	}
-
-	// Read chars up to next whitespace
-	while(m_input_index < m_input.length) {
+	while(m_input_index < m_input.length) {             // Read chars up to next whitespace
 	    var ch = m_input[m_input_index];
 	    if (is_whitespace(ch)) {
 		m_input_index++;
