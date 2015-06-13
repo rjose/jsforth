@@ -416,19 +416,10 @@ $f = (function makeInterpreter() {
     define_builtins();
 
     // jsforth intepreter
-    var MAX_ITERATIONS = 5000;                              // Max words in string
     function result(str) {
 	m_input = str;                                      // Reset m_input
-	m_input_index = 0;                                  // Start at the beginning
-
-	var num_iters = 0;
-	while (interpret_next_word()) {                     // Interpret while there are words in string
-	    num_iters++;
-	    if (num_iters > MAX_ITERATIONS) {
-		break;
-	    }
-	}
-	return;
+	m_input_index = 0;                                  // Start at the beginning of string
+	while (interpret_next_word()) {};                   // Interpret while there are words in string
     }
     return result;
 })();
