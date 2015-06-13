@@ -1,0 +1,18 @@
+= Pass 5: Define colon definitions
+
+Define a compile function and connect it to ":"
+
+== Tasks
+- [x] Define a compile function
+- [x] Define ":" and ";"
+- [x] Create some definitions
+
+
+== Status
+- Effort spent: h
+- Effort left: 0h
+- Initial estimate: 2h
+
+== Log
+
+=== Saturday, 04/25/2015

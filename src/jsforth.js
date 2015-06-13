@@ -10,6 +10,7 @@ $f = (function makeInterpreter() {
     var m_input_index = 0;                                  // Index into m_input
 
     var m_cur_word = "";                                    // Last word read
+    var m_cur_definition = {};                              // Currently defined definition
 
     //---------------------------------------------------------------------------
     // True if space, tab, or newline
@@ -80,8 +81,7 @@ $f = (function makeInterpreter() {
 	    return 0;
 	}
 
-	var entry = m_dictionary[m_cur_word];
-	                                                    // Look up entry in dictionary
+	var entry = m_dictionary[m_cur_word];               // Look up entry in dictionary
 
 	if (entry) {                                        // If we have an entry, execute its code
 	    entry.code();
@@ -97,13 +97,46 @@ $f = (function makeInterpreter() {
 	return 1;                                           // Indicate that we interpreted something
     }
 
+    
     //---------------------------------------------------------------------------
-    // Code for all variables
+    // Compiles word into current definition
     //
-    // This puts the variable's "address" on the stack (i.e., its name)
+    // Returns the following:
+    //   * If ";", then 0
+    //   * If abort, then -1
+    //   * Otherwise, 1
+    //
+    // NOTE: This should only be called by ":".
     //---------------------------------------------------------------------------
-    function execute_variable() {
-	console.log("TODO: Implement execute_variable");
+    function compile_word() {
+	read_word();
+
+	if (m_cur_word == "") {                             // If no word, then we're at the end of the string
+	    abort("Incomplete definition");
+	    return -1;
+	}
+
+	var entry = m_dictionary[m_cur_word];               // Look up entry in dictionary
+
+	if (entry && entry.immediate) {                     // If an immediate word, then execute it
+	    entry.code();
+	}
+	else if (entry) {                                   // If just an entry, add it to the def's params
+	    m_cur_definition.parameters.push(m_cur_word);
+	    if (m_cur_word == ";") {                        // Also, if ";", then definition is complete
+		return 0;
+	    }
+	}
+	else {                                              // See if word is a number
+	    var number = Number(m_cur_word);
+	    if (isNaN(number)) {
+		abort(m_cur_word + " is not a number");
+		return -1;
+	    }
+	    m_cur_definition.parameters.push(number);
+	}
+
+	return 1;
     }
 
 
@@ -182,6 +215,41 @@ $f = (function makeInterpreter() {
 		    return;
 		}
 		var_entry.parameters[0] = value;            // Set variable's value
+	    },
+	    parameters: []
+	};
+
+	// Define ":"
+	m_dictionary[":"] = {
+	    code: function() {
+		read_word();                                // Get def's name
+		var name = m_cur_word;
+		m_cur_definition = {
+		    code: function() {
+			console.log("TODO: Define execute definition");
+		    },
+		    parameters: []
+		}
+		while(1) {
+		    var status = compile_word();
+		    if (status == 0) {                      // Normal end of definition
+			break;
+		    }
+		    if (status == -1) {                     // Abort definition
+			return;
+		    }
+		    // Otherwise, keep compiling
+		}
+
+		m_dictionary[name] = m_cur_definition;      // Store new definition
+	    },
+	    parameters: []
+	};
+
+	// Define ";"
+	m_dictionary[";"] = {
+	    code: function() {
+		console.log("TODO: Implement ';'");
 	    },
 	    parameters: []
 	};
