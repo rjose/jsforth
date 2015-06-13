@@ -1,0 +1,16 @@
+= Pass 6: Execute colon definitions
+
+Execute a colon definition we defined
+
+== Tasks
+- [x] Execute colon definition
+
+
+== Status
+- Effort spent: h
+- Effort left: 0h
+- Initial estimate: 2h
+
+== Log
+
+=== Saturday, 04/25/2015

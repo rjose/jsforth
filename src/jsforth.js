@@ -66,6 +66,25 @@ $f = (function makeInterpreter() {
 	console.log(message);
     }
 
+    //---------------------------------------------------------------------------
+    // Interprets specified word
+    //---------------------------------------------------------------------------
+    function interpret(word) {
+	var entry = m_dictionary[word];                     // Look up entry
+	if (entry) {                                        // If we have an entry, execute its code
+	    return entry.code();
+	}
+	else {                                              // Otherwise, see if it's a number
+	    var number = Number(word);
+	    if (isNaN(number)) {
+		abort(word + " is not a number");
+		return -1;
+	    }
+	    m_stack.push(number);                           // Push number onto forth stack
+	}
+	return 0;
+    }
+
 
     //---------------------------------------------------------------------------
     // Reads next word and attempts to interpret it
@@ -75,24 +94,15 @@ $f = (function makeInterpreter() {
     //
     // Returns 1 if a word was intepreted; 0 otherwise
     //---------------------------------------------------------------------------
-    function interpret_word() {
+    function interpret_next_word() {
 	read_word();
 	if (m_cur_word == "") {                             // If no word, then we're at the end of the string
 	    return 0;
 	}
 
-	var entry = m_dictionary[m_cur_word];               // Look up entry in dictionary
-
-	if (entry) {                                        // If we have an entry, execute its code
-	    entry.code();
-	}
-	else {                                              // Otherwise, see if it's a number
-	    var number = Number(m_cur_word);
-	    if (isNaN(number)) {
-		abort(m_cur_word + " is not a number");
-		return;
-	    }
-	    m_stack.push(number);                           // Push number onto forth stack
+	var status = interpret(m_cur_word);                 // Interpret word
+	if (status == -1) {                                 // If something went wrong, return 0 to stop
+	    return 0;
 	}
 	return 1;                                           // Indicate that we interpreted something
     }
@@ -133,10 +143,46 @@ $f = (function makeInterpreter() {
 		abort(m_cur_word + " is not a number");
 		return -1;
 	    }
-	    m_cur_definition.parameters.push(number);
+	    m_cur_definition.parameters.push(m_cur_word);
 	}
 
 	return 1;
+    }
+
+    //---------------------------------------------------------------------------
+    // Executes specified colon definition
+    //
+    // Returns -1 on abort; 0 otherwise.
+    //---------------------------------------------------------------------------
+    function execute_definition(def_name) {
+	if (!m_dictionary[def_name]) {
+	    abort("Can't find colon definition for " + entry);
+	    return -1;
+	}
+	var context = {                                     // Create context...
+	    def_name: def_name,
+	    ip: 0
+	}
+	m_return_stack.push(context);                       // ...and push onto return stack
+
+	while(1) {
+	    var top_index = m_return_stack.length-1;
+	    var top_context = m_return_stack[top_index];
+	    var next_word = m_dictionary[top_context.def_name].parameters[top_context.ip];
+	    var status = interpret(next_word);
+	    if (status == 0) {
+		m_return_stack[top_index].ip++;             // Advance to next instruction
+	    }
+	    if (status == -1) {                             // If aborted
+		return -1;                                  // then abort
+	    }
+	    if (status == 1) {                              // If word was an EXIT
+		return 0;                                   // then return 0 to indicate successful execution
+	    }
+	}
+
+	abort("execute_definition: Shouldn't get to here");
+	return -1;
     }
 
 
@@ -149,7 +195,7 @@ $f = (function makeInterpreter() {
 	    code: function() {
 		if (m_stack.length == 0) {                  // If underflow, abort
 		    abort("Stack underflow");
-		    return;
+		    return -1;                              // -1 means aborted
 		}
 		var value = m_stack.pop();                  // Get the constant's value
 		read_word();                                // Get constant's name
@@ -160,8 +206,8 @@ $f = (function makeInterpreter() {
 		    },
 		    parameters: []
 		};
-	    },
-	    parameters: []
+		return 0;                                   // 0 means normal execution
+	    }
 	};
 
 
@@ -176,8 +222,8 @@ $f = (function makeInterpreter() {
 		    },
 		    parameters: [0]                         // Default value to 0
 		};
-	    },
-	    parameters: []
+		return 0;                                   // 0 means normal execution
+	    }
 	};
 
 	// Define "@"
@@ -185,18 +231,18 @@ $f = (function makeInterpreter() {
 	    code: function() {
 		if (m_stack.length == 0) {                  // If underflow, abort
 		    abort("Stack underflow");
-		    return;
+		    return -1;                              // -1 means aborted
 		}
 		var var_name = m_stack.pop();               // Get variable name
 
 		var var_entry = m_dictionary[var_name];     // Look up variable's entry...
 		if (!var_entry) {
 		    abort("Unknown variable " + var_name);
-		    return;
+		    return -1;
 		}
 		m_stack.push(var_entry.parameters[0]);      // ...and push its value onto stack
-	    },
-	    parameters: []
+		return 0;                                   // Normal execution
+	    }
 	};
 
 	// Define "!"
@@ -204,7 +250,7 @@ $f = (function makeInterpreter() {
 	    code: function() {
 		if (m_stack.length < 2) {                   // If underflow, abort
 		    abort("Stack underflow");
-		    return;
+		    return -1;
 		}
 		var var_name = m_stack.pop();               // Get variable name
 		var value = m_stack.pop();                  // Get variable's new value
@@ -212,11 +258,11 @@ $f = (function makeInterpreter() {
 		var var_entry = m_dictionary[var_name];     // Look up variable's entry...
 		if (!var_entry) {
 		    abort("Unknown variable " + var_name);
-		    return;
+		    return -1;
 		}
 		var_entry.parameters[0] = value;            // Set variable's value
-	    },
-	    parameters: []
+		return 0;
+	    }
 	};
 
 	// Define ":"
@@ -226,37 +272,36 @@ $f = (function makeInterpreter() {
 		var name = m_cur_word;
 		m_cur_definition = {
 		    code: function() {
-			console.log("TODO: Define execute definition");
+			return execute_definition(name);
 		    },
-		    parameters: []
+		    parameters: []                          // Holds compiled instructions
 		}
-		while(1) {
+		while(1) {                                  // Compile all words in definition
 		    var status = compile_word();
-		    if (status == 0) {                      // Normal end of definition
-			break;
+		    if (status == 0) {                      // If end of definition
+			break;                              // then break out of loop
 		    }
-		    if (status == -1) {                     // Abort definition
-			return;
+		    if (status == -1) {                     // If abort happened during compile_word
+			return -1;                          // then abort out as well
 		    }
-		    // Otherwise, keep compiling
 		}
 
 		m_dictionary[name] = m_cur_definition;      // Store new definition
-	    },
-	    parameters: []
+		return 0;
+	    }
 	};
 
 	// Define ";"
 	m_dictionary[";"] = {
 	    code: function() {
-		console.log("TODO: Implement ';'");
-	    },
-	    parameters: []
+		m_return_stack.pop();                       // Make previous context the current one
+		return 1;                                   // Return 1 to indicate an EXIT
+	    }
 	};
 
 
-	// Define ".s"
-	m_dictionary[".s"] = {
+	// Define ".state"
+	m_dictionary[".state"] = {
 	    code: function() {                              // Prints interpreter state
 		var state = {
 		    dictionary: m_dictionary,
@@ -264,9 +309,31 @@ $f = (function makeInterpreter() {
 		    return_stack: m_return_stack
 		};
 		console.log(state);
-	    },
-	    parameters: []
+		return 0;
+	    }
 	};
+
+	// Define ".s"
+	m_dictionary[".s"] = {
+	    code: function() {
+		console.log(m_stack);
+		return 0;
+	    }
+	};
+
+	// Define "."
+	m_dictionary["."] = {
+	    code: function() {
+		if (m_stack.length == 0) {
+		    abort("Stack underflow");
+		    return -1;
+		}
+		var value = m_stack.pop();
+		console.log(value);
+		return 0;
+	    }
+	};
+
     }
 
     define_builtins();
@@ -279,7 +346,7 @@ $f = (function makeInterpreter() {
 	m_input_index = 0;                                  // Start at the beginning
 
 	var num_iters = 0;
-	while (interpret_word()) {                          // Interpret while there are words in string
+	while (interpret_next_word()) {                     // Interpret while there are words in string
 	    num_iters++;
 	    if (num_iters > MAX_ITERATIONS) {
 		break;
