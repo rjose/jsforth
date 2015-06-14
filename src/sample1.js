@@ -21,17 +21,13 @@ $f.DefineWord("howdy", function() {
     return 0;
 });
 
-// TODO: Consider making the current event global
 $f.DefineWord("GREET", function() {
-    var event = $f.stack.pop();                             // Event handlers must pop event
-    console.log("Hello!", event);
+    console.log("Hello!", $f.event);
     return 0;
 });
 
 
 $f.DefineWord("RENDER-PAGE", function() {
-    var event = $f.stack.pop();                             // Event handlers must pop event
-    
     $f("howdy click addEventListener GREET");
     return 0;
 });

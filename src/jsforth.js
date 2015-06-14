@@ -12,7 +12,6 @@ $f = (function makeInterpreter() {
     var m_cur_word = "";                                    // Last word read
     var m_cur_definition = {};                              // Currently defined definition
 
-    var m_ajax_response = {};                               // Latest AjaxResponse
 
     //---------------------------------------------------------------------------
     // True if space, tab, or newline
@@ -423,6 +422,7 @@ $f = (function makeInterpreter() {
 	m_input = str;                                      // Reset m_input
 	m_input_index = 0;                                  // Start at the beginning of string
 	while (interpret_next_word()) {};                   // Interpret while there are words in string
+	return "OK";
     }
 
     // Expose internals for extension
@@ -431,7 +431,8 @@ $f = (function makeInterpreter() {
     result.return_stack = m_return_stack;
     result.Tick = Tick;
     result.DefineWord = DefineWord;
-    result.ajax_response = m_ajax_response;
+    result.ajax_response = {};                              // Latest ajax response
+    result.event = {};                                      // Latest js event
     return result;
 })();
 
@@ -492,7 +493,7 @@ $f.DefineWord("addEventListener", function() {
 
     // Add listener
     element.addEventListener(eventName, function(event) {
-	$f.stack.push(event);                               // Push the event onto the stack
+	$f.event = event;                                   // Store latest event
 	$f(entryName);                                      // Execute the specified handler
     });
     return 0;
