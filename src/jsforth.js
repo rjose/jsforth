@@ -57,9 +57,9 @@ $f = (function makeInterpreter() {
     // Also prints message to console
     //---------------------------------------------------------------------------
     function abort(message) {
-	m_stack = [];
-	m_return_stack = [];
-	console.log(message);
+	m_stack.length = 0;                                 // Clear stack
+	m_return_stack.length = 0;                          // Clear return stack
+	console.log(message, m_stack);
     }
 
     //---------------------------------------------------------------------------
@@ -265,6 +265,25 @@ $f = (function makeInterpreter() {
 	    }
 	};
 
+	// Define "`"
+	m_dictionary["`"] = {
+	    code: function() {
+		read_word();
+		if (m_cur_word == "") {                     // If no word, abort
+		    abort("TICK had no word to look up");
+		    return -1;
+		}
+		var entry = m_dictionary[m_cur_word];       // Look up entry
+		if (entry) {
+		    m_stack.push(m_cur_word);               // If exists, push name onto stack
+		}
+		else {
+		    m_stack.push(undefined);                // Otherwise, push undefined
+		}
+		return 0;                                   // Normal execution
+	    }
+	};
+
 
 	// Define "IF"
 	m_dictionary["IF"] = {
@@ -452,10 +471,42 @@ JSForth.DefineWord(".", function() {
     return 0;
 });
 
+//------------------------------------------------------------------------------
+// Adds event listener to element
+//------------------------------------------------------------------------------
+JSForth.DefineWord("addEventListener", function() {
+    // Get entry, event, and element from the stack
+    var entryName = $f.stack.pop();
+    var eventName = $f.stack.pop();
+    var element = $f.stack.pop();
 
-JSForth.DefineWord("-", function() {
-    var r = $f.stack.pop();
-    var l = $f.stack.pop();
-    var difference = l - r;
-    $f.stack.push(difference);
+    // Add listener
+    element.addEventListener(eventName, function(event) {
+	$f.stack.push(event);                               // Push the event onto the stack
+	$f(entryName);                                      // Execute the specified handler
+    });
+    return 0;
+});
+
+
+//------------------------------------------------------------------------------
+// Pushes document element onto stack
+//------------------------------------------------------------------------------
+JSForth.DefineWord("document", function() {
+    $f.stack.push(document);
+    return 0;
+});
+
+
+//------------------------------------------------------------------------------
+// Pushes event names onto stack
+//------------------------------------------------------------------------------
+JSForth.DefineWord("DOMContentLoaded", function() {
+    $f.stack.push("DOMContentLoaded");
+    return 0;
+});
+
+JSForth.DefineWord("click", function() {
+    $f.stack.push("click");
+    return 0;
 });

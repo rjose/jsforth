@@ -9,11 +9,11 @@ default: help
 
 
 #-------------------------------------------------------------------------------
-# Runs harness server
+# Runs flask server
 #-------------------------------------------------------------------------------
-.PHONY: run_server
-run_server:
-	python2 -m SimpleHTTPServer 8000
+.PHONY: run
+run:
+	cd src && python2 api_server.py
 
 #=======================================
 # Targets: Misc
@@ -26,7 +26,7 @@ run_server:
 help:
 	@echo -e "\njsforth Make Targets"
 
-	@echo -e "\trun_server:\t\tRuns simple web server"
+	@echo -e "\trun:\t\tRuns flask web server"
 	@echo -e "\thelp:\t\tShows this message"
 
 

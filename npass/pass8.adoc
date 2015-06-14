@@ -1,0 +1,17 @@
+= Pass 8: Register handlers
+
+Create words that can register for events
+
+== Tasks
+- [ ] Register for page load event
+- [ ] Add click handler to element
+
+
+== Status
+- Effort spent: h
+- Effort left: 0h
+- Initial estimate: 2h
+
+== Log
+
+=== Saturday, 04/25/2015
