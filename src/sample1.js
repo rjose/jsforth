@@ -1,4 +1,4 @@
-JSForth.DefineWord("-", function() {
+$f.DefineWord("-", function() {
     var r = $f.stack.pop();
     var l = $f.stack.pop();
     var difference = l - r;
@@ -6,7 +6,7 @@ JSForth.DefineWord("-", function() {
     return 0;
 });
 
-JSForth.DefineWord("+", function() {
+$f.DefineWord("+", function() {
     var r = $f.stack.pop();
     var l = $f.stack.pop();
     var sum = l + r;
@@ -15,19 +15,19 @@ JSForth.DefineWord("+", function() {
 });
 
 
-JSForth.DefineWord("howdy", function() {
+$f.DefineWord("howdy", function() {
     var element = document.getElementById('howdy');
     $f.stack.push(element);
     return 0;
 });
 
-JSForth.DefineWord("GREET", function() {
+$f.DefineWord("GREET", function() {
     var event = $f.stack.pop();                             // Event handlers must pop event
     console.log("Hello!", event);
     return 0;
 });
 
-JSForth.DefineWord("RENDER-PAGE", function() {
+$f.DefineWord("RENDER-PAGE", function() {
     var event = $f.stack.pop();                             // Event handlers must pop event
     $f("howdy click addEventListener GREET");
     return 0;

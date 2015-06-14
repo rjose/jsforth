@@ -195,7 +195,7 @@ $f = (function makeInterpreter() {
     //
     // If can't find entry, pushes undefined.
     //---------------------------------------------------------------------------
-    function tick() {
+    function Tick() {
 	read_word();
 	if (m_cur_word == "") {                             // If no word, abort
 	    abort("TICK had no word to look up");           
@@ -288,7 +288,7 @@ $f = (function makeInterpreter() {
 
 	// Define "`"
 	m_dictionary["`"] = {
-	    code: tick
+	    code: Tick
 	};
 
 
@@ -406,6 +406,16 @@ $f = (function makeInterpreter() {
     }
     define_builtins();
 
+
+    //---------------------------------------------------------------------------
+    // Helper function for defining words in javascript
+    //---------------------------------------------------------------------------
+    function DefineWord(name, func) {
+	m_dictionary[name] = {
+	    code: func
+	};
+    }
+
     // jsforth intepreter
     function result(str) {
 	m_input = str;                                      // Reset m_input
@@ -417,27 +427,13 @@ $f = (function makeInterpreter() {
     result.dictionary = m_dictionary;
     result.stack = m_stack;
     result.return_stack = m_return_stack;
-    result.tick = tick;
+    result.Tick = Tick;
+    result.DefineWord = DefineWord;
     return result;
 })();
 
 
 
-//==========================================================
-// API for creating forth words in javascript
-//==========================================================
-JSForth = (function() {
-    function DefineWord(name, func) {
-	$f.dictionary[name] = {
-	    code: func
-	}
-    }
-
-    var result = {
-	DefineWord: DefineWord
-    };
-    return result;
-})();
 
 //==========================================================
 // Define common words
@@ -446,7 +442,7 @@ JSForth = (function() {
 //------------------------------------------------------------------------------
 // Prints state of forth interpreter
 //------------------------------------------------------------------------------
-JSForth.DefineWord(".state", function() {
+$f.DefineWord(".state", function() {
     var state = {
 	dictionary: $f.dictionary,
 	stack: $f.stack,
@@ -460,7 +456,7 @@ JSForth.DefineWord(".state", function() {
 //------------------------------------------------------------------------------
 // Prints forth stack
 //------------------------------------------------------------------------------
-JSForth.DefineWord(".s", function() {
+$f.DefineWord(".s", function() {
     console.log($f.stack);
     return 0;
 });
@@ -469,7 +465,7 @@ JSForth.DefineWord(".s", function() {
 //------------------------------------------------------------------------------
 // Pops value from forth stack and prints it
 //------------------------------------------------------------------------------
-JSForth.DefineWord(".", function() {
+$f.DefineWord(".", function() {
     if ($f.stack.length == 0) {
 	abort("Stack underflow");
 	return -1;
@@ -482,13 +478,13 @@ JSForth.DefineWord(".", function() {
 //------------------------------------------------------------------------------
 // Adds event listener to element
 //------------------------------------------------------------------------------
-JSForth.DefineWord("addEventListener", function() {
+$f.DefineWord("addEventListener", function() {
     // Get event, and element from the stack
     var eventName = $f.stack.pop();
     var element = $f.stack.pop();
 
     // Next word is handler
-    $f.tick();
+    $f.Tick();
     var entryName = $f.stack.pop();
 
     // Add listener
@@ -503,7 +499,7 @@ JSForth.DefineWord("addEventListener", function() {
 //------------------------------------------------------------------------------
 // Pushes document element onto stack
 //------------------------------------------------------------------------------
-JSForth.DefineWord("document", function() {
+$f.DefineWord("document", function() {
     $f.stack.push(document);
     return 0;
 });
@@ -512,12 +508,12 @@ JSForth.DefineWord("document", function() {
 //------------------------------------------------------------------------------
 // Pushes event names onto stack
 //------------------------------------------------------------------------------
-JSForth.DefineWord("DOMContentLoaded", function() {
+$f.DefineWord("DOMContentLoaded", function() {
     $f.stack.push("DOMContentLoaded");
     return 0;
 });
 
-JSForth.DefineWord("click", function() {
+$f.DefineWord("click", function() {
     $f.stack.push("click");
     return 0;
 });
