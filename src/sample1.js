@@ -22,17 +22,17 @@ JSForth.DefineWord("howdy", function() {
 });
 
 JSForth.DefineWord("GREET", function() {
-    console.log("Hello!");
+    var event = $f.stack.pop();                             // Event handlers must pop event
+    console.log("Hello!", event);
     return 0;
 });
 
 JSForth.DefineWord("RENDER-PAGE", function() {
-    var event = $f.stack.pop();
-    console.log("TODO: Render page!", event);
-    $f("howdy click ` GREET addEventListener");
+    var event = $f.stack.pop();                             // Event handlers must pop event
+    $f("howdy click addEventListener GREET");
     return 0;
 });
 
 // Add event handlers
-$f("document DOMContentLoaded ` RENDER-PAGE addEventListener");
+$f("document DOMContentLoaded addEventListener RENDER-PAGE");
 

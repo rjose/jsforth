@@ -3,8 +3,8 @@
 Create words that can register for events
 
 == Tasks
-- [ ] Register for page load event
-- [ ] Add click handler to element
+- [x] Register for page load event
+- [x] Add click handler to element
 
 
 == Status

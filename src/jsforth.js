@@ -190,6 +190,27 @@ $f = (function makeInterpreter() {
 	return -1;
     }
 
+    //---------------------------------------------------------------------------
+    // Reads next word and pushes address (name) onto stack
+    //
+    // If can't find entry, pushes undefined.
+    //---------------------------------------------------------------------------
+    function tick() {
+	read_word();
+	if (m_cur_word == "") {                             // If no word, abort
+	    abort("TICK had no word to look up");           
+	    return -1;				            
+	}					            
+	var entry = m_dictionary[m_cur_word];               // Look up entry
+	if (entry) {				            
+	    m_stack.push(m_cur_word);                       // If exists, push name onto stack
+	}					            
+	else {					            
+	    m_stack.push(undefined);                        // Otherwise, push undefined
+	}					            
+	return 0;                                           // Normal execution
+    }
+
 
     //---------------------------------------------------------------------------
     // Defines builtin words for jsforth interpreter
@@ -267,21 +288,7 @@ $f = (function makeInterpreter() {
 
 	// Define "`"
 	m_dictionary["`"] = {
-	    code: function() {
-		read_word();
-		if (m_cur_word == "") {                     // If no word, abort
-		    abort("TICK had no word to look up");
-		    return -1;
-		}
-		var entry = m_dictionary[m_cur_word];       // Look up entry
-		if (entry) {
-		    m_stack.push(m_cur_word);               // If exists, push name onto stack
-		}
-		else {
-		    m_stack.push(undefined);                // Otherwise, push undefined
-		}
-		return 0;                                   // Normal execution
-	    }
+	    code: tick
 	};
 
 
@@ -410,6 +417,7 @@ $f = (function makeInterpreter() {
     result.dictionary = m_dictionary;
     result.stack = m_stack;
     result.return_stack = m_return_stack;
+    result.tick = tick;
     return result;
 })();
 
@@ -475,10 +483,13 @@ JSForth.DefineWord(".", function() {
 // Adds event listener to element
 //------------------------------------------------------------------------------
 JSForth.DefineWord("addEventListener", function() {
-    // Get entry, event, and element from the stack
-    var entryName = $f.stack.pop();
+    // Get event, and element from the stack
     var eventName = $f.stack.pop();
     var element = $f.stack.pop();
+
+    // Next word is handler
+    $f.tick();
+    var entryName = $f.stack.pop();
 
     // Add listener
     element.addEventListener(eventName, function(event) {
