@@ -12,6 +12,8 @@ $f = (function makeInterpreter() {
     var m_cur_word = "";                                    // Last word read
     var m_cur_definition = {};                              // Currently defined definition
 
+    var m_ajax_response = {};                               // Latest AjaxResponse
+
     //---------------------------------------------------------------------------
     // True if space, tab, or newline
     //---------------------------------------------------------------------------
@@ -429,6 +431,7 @@ $f = (function makeInterpreter() {
     result.return_stack = m_return_stack;
     result.Tick = Tick;
     result.DefineWord = DefineWord;
+    result.ajax_response = m_ajax_response;
     return result;
 })();
 

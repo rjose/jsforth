@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template
+from flask import Flask, redirect, render_template, jsonify
 from flask.ext.compress import Compress
 
 app = Flask(__name__)
@@ -36,6 +36,13 @@ def page1_min_js():
     SAMPLE1_JS = read_file("sample1.min.js")
     PAGE1_JS = JSFORTH_JS + SAMPLE1_JS
     return PAGE1_JS
+
+#=======================================
+# API Routes
+#=======================================
+@app.route('/api/page/sample1')
+def api_page_sample1():
+    return jsonify({"docs": ["one", "two", "three"]})
 
 #=======================================
 # Vocabulary Routes
