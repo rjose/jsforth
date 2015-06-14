@@ -1,5 +1,8 @@
 from flask import Flask, redirect, render_template
+from flask.ext.compress import Compress
+
 app = Flask(__name__)
+Compress(app)
 
 
 #=======================================
@@ -24,6 +27,13 @@ def jsforth_js():
 def page1_js():
     JSFORTH_JS = read_file("jsforth.js")
     SAMPLE1_JS = read_file("sample1.js")
+    PAGE1_JS = JSFORTH_JS + SAMPLE1_JS
+    return PAGE1_JS
+
+@app.route('/page1.min.js')
+def page1_min_js():
+    JSFORTH_JS = read_file("jsforth.min.js")
+    SAMPLE1_JS = read_file("sample1.min.js")
     PAGE1_JS = JSFORTH_JS + SAMPLE1_JS
     return PAGE1_JS
 
