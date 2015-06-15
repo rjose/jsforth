@@ -176,7 +176,7 @@ $f = (function makeInterpreter() {
 	    }
 
 	    // Check status
-	    if (status == 0) {
+	    if (status == 0 || status == undefined) {
 		m_return_stack[top_index].ip++;             // Advance to next instruction
 	    }
 	    if (status == -1) {                             // If aborted
@@ -291,6 +291,27 @@ $f = (function makeInterpreter() {
 	m_dictionary["`"] = {
 	    code: Tick
 	};
+
+	m_dictionary['."'] = {
+	    code: function() {
+		var quoted_string = "";
+
+		// Read chars up to '"'
+		while(m_input_index < m_input.length) {
+		    // Read chars
+		    var ch = m_input[m_input_index];
+		    if (ch == '"') {
+			m_input_index++;
+			break;
+		    }
+		    else {
+			quoted_string += ch;
+			m_input_index++;
+		    }
+		}
+		m_stack.push(quoted_string);
+	    }
+	}
 
 
 	// Define "IF"
@@ -453,7 +474,6 @@ $f.DefineWord(".state", function() {
 	return_stack: $f.return_stack
     };
     console.log(state);
-    return 0;
 });
 
 
@@ -462,7 +482,6 @@ $f.DefineWord(".state", function() {
 //------------------------------------------------------------------------------
 $f.DefineWord(".s", function() {
     console.log($f.stack);
-    return 0;
 });
 
 
@@ -470,14 +489,14 @@ $f.DefineWord(".s", function() {
 // Pops value from forth stack and prints it
 //------------------------------------------------------------------------------
 $f.DefineWord(".", function() {
-    if ($f.stack.length == 0) {
-	abort("Stack underflow");
-	return -1;
-    }
     var value = $f.stack.pop();
     console.log(value);
-    return 0;
 });
+
+//------------------------------------------------------------------------------
+// Synonym for "."
+//------------------------------------------------------------------------------
+$f(': LOG . ;');
 
 //------------------------------------------------------------------------------
 // Adds event listener to element
@@ -496,7 +515,6 @@ $f.DefineWord("addEventListener", function() {
 	$f.event = event;                                   // Store latest event
 	$f(entryName);                                      // Execute the specified handler
     });
-    return 0;
 });
 
 
@@ -505,7 +523,6 @@ $f.DefineWord("addEventListener", function() {
 //------------------------------------------------------------------------------
 $f.DefineWord("document", function() {
     $f.stack.push(document);
-    return 0;
 });
 
 
@@ -514,10 +531,8 @@ $f.DefineWord("document", function() {
 //------------------------------------------------------------------------------
 $f.DefineWord("DOMContentLoaded", function() {
     $f.stack.push("DOMContentLoaded");
-    return 0;
 });
 
 $f.DefineWord("click", function() {
     $f.stack.push("click");
-    return 0;
 });

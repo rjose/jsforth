@@ -3,7 +3,6 @@ $f.DefineWord("-", function() {
     var l = $f.stack.pop();
     var difference = l - r;
     $f.stack.push(difference);
-    return 0;
 });
 
 $f.DefineWord("+", function() {
@@ -11,30 +10,25 @@ $f.DefineWord("+", function() {
     var l = $f.stack.pop();
     var sum = l + r;
     $f.stack.push(sum);
-    return 0;
 });
 
 
 $f.DefineWord("howdy", function() {
     var element = document.getElementById('howdy');
     $f.stack.push(element);
-    return 0;
 });
 
 $f.DefineWord("GREET", function() {
     console.log("Hello!", $f.event);
-    return 0;
 });
 
 
 $f.DefineWord("RENDER-PAGE", function() {
     $f("howdy click addEventListener GREET");
-    return 0;
 });
 
 $f.DefineWord("PAGE-APIURL", function() {
     $f.stack.push("/api/page/sample1");
-    return 0;
 });
 
 
@@ -63,18 +57,15 @@ $f.DefineWord("HGET", function() {
     xhr.onload = onload;
     xhr.open("get", url);
     xhr.send();
-    return 0;
 });
 
 
 $f.DefineWord("S", function() {
     console.log("Success", $f.ajax_response);
-    return 0;
 });
 
 $f.DefineWord("F", function() {
     console.log("Failure", $f.ajax_response);
-    return 0;
 });
 
 
