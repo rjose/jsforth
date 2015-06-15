@@ -71,6 +71,14 @@ $f = (function makeInterpreter() {
 	if (entry) {                                        // If we have an entry, execute its code
 	    return entry.code();
 	}
+	else if (word[0] == '.' && word[1] == '"' && word[word.length-1] == '"') {  // Handle ." string
+	    var string = word.slice(3, -1);                 // Remove ." and "
+	    m_stack.push(string);
+	}
+	else if (word[0] == '`') {                          // Handle "` <address>"
+	    var string = word.slice(2);
+	    m_stack.push(string);
+	}
 	else {                                              // Otherwise, see if it's a number
 	    var number = Number(word);
 	    if (isNaN(number)) {
@@ -126,7 +134,19 @@ $f = (function makeInterpreter() {
 	var entry = m_dictionary[m_cur_word];               // Look up entry in dictionary
 
 	if (entry && entry.immediate) {                     // If an immediate word, then execute it
-	    return entry.code();
+	    var entry_name = m_cur_word;
+	    var status = entry.code();
+	    if (entry_name == '."') {                       // If .", get string from stack and add as param
+		var string = m_stack.pop();
+		m_cur_definition.parameters.push('." ' + string + '"');
+	    }
+	    if (entry_name == '`') {
+		var address = m_stack.pop();
+		console.log("TICK", address);
+		m_cur_definition.parameters.push('` ' + address);
+		console.log(m_cur_definition);
+	    }
+	    return status;
 	}
 	else if (entry) {                                   // If just an entry, add it to the def's params
 	    m_cur_definition.parameters.push(m_cur_word);
@@ -289,7 +309,8 @@ $f = (function makeInterpreter() {
 
 	// Define "`"
 	m_dictionary["`"] = {
-	    code: Tick
+	    code: Tick,
+	    immediate: true
 	};
 
 	m_dictionary['."'] = {
@@ -310,7 +331,8 @@ $f = (function makeInterpreter() {
 		    }
 		}
 		m_stack.push(quoted_string);
-	    }
+	    },
+	    immediate: true
 	}
 
 
@@ -503,12 +525,9 @@ $f(': LOG . ;');
 //------------------------------------------------------------------------------
 $f.DefineWord("addEventListener", function() {
     // Get event, and element from the stack
+    var entryName = $f.stack.pop();
     var eventName = $f.stack.pop();
     var element = $f.stack.pop();
-
-    // Next word is handler
-    $f.Tick();
-    var entryName = $f.stack.pop();
 
     // Add listener
     element.addEventListener(eventName, function(event) {
@@ -519,10 +538,73 @@ $f.DefineWord("addEventListener", function() {
 
 
 //------------------------------------------------------------------------------
+// Makes an XHR GET request
+//------------------------------------------------------------------------------
+$f.DefineWord("HGET", function() {
+    $f.ajax_response = {};                                  // Clear ajax response
+    var handleFailure = $f.stack.pop();
+    var handleSuccess = $f.stack.pop();
+    var url = $f.stack.pop();
+    
+    function onload () {
+	$f.ajax_response = this;                            // Set ajax response
+	if (this.status < 400) {
+	    $f(handleSuccess);
+	}
+	else {
+	    $f(handleFailure);
+	}
+    }
+
+    // Make API call
+    var xhr = new XMLHttpRequest();
+    xhr.onload = onload;
+    xhr.open("get", url);
+    xhr.send();
+});
+
+
+//------------------------------------------------------------------------------
+// Shows last ajax response error
+//------------------------------------------------------------------------------
+$f.DefineWord("SHOW-AJAX-ERROR", function() {
+    console.log("Ajax Error", $f.ajax_response);
+});
+
+
+//------------------------------------------------------------------------------
+// Pushes last ajax response onto stack, parsing as JSON
+//------------------------------------------------------------------------------
+$f.DefineWord("AJAX-DATA", function() {
+    var data = JSON.parse($f.ajax_response.response);
+    $f.stack.push(data);
+});
+
+
+//------------------------------------------------------------------------------
 // Pushes document element onto stack
 //------------------------------------------------------------------------------
 $f.DefineWord("document", function() {
     $f.stack.push(document);
+});
+
+//------------------------------------------------------------------------------
+// Pushes document element onto stack
+//------------------------------------------------------------------------------
+$f.DefineWord("E", function() {
+    var element_id = $f.stack.pop();
+    var element = document.getElementById(element_id);
+    $f.stack.push(element);
+});
+
+//------------------------------------------------------------------------------
+// Gets field from a javascript object
+//------------------------------------------------------------------------------
+$f.DefineWord("FIELD", function() {
+    var field = $f.stack.pop();
+    var object = $f.stack.pop();
+    var value = object[field];
+    $f.stack.push(value);
 });
 
 
