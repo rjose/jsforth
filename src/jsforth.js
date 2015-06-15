@@ -140,11 +140,9 @@ $f = (function makeInterpreter() {
 		var string = m_stack.pop();
 		m_cur_definition.parameters.push('." ' + string + '"');
 	    }
-	    if (entry_name == '`') {
+	    if (entry_name == '`') {                        // If "`", put complete tick expression in param
 		var address = m_stack.pop();
-		console.log("TICK", address);
 		m_cur_definition.parameters.push('` ' + address);
-		console.log(m_cur_definition);
 	    }
 	    return status;
 	}
