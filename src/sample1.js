@@ -1,31 +1,35 @@
-$f(`
-   VARIABLE documents
+$f(': PAGE-DATA-URL  ." /api/page/sample1" ;');   // Pushes page data API url onto stack
+$f(': DOCS  ." docs" FIELD ;');                   // Replaces top of stack with its "docs" field
+$f(': howdy-ctrl  ." howdy" E ;');                // The 'howdy' element is a control we can click
+$f(': doclist  ." doclist" E ;');                 // The 'doclist' element is a list of documents
+$f(': GREET  ." Hello!" LOG ;');                  // Prints a message to the console
+$f(`VARIABLE documents`);                         // Holds documents data
 
-   : howdy-ctrl
-       ." howdy" E ;
+// Stores data from page data call into variables
+$f(`: STORE-PAGE-DATA
+       AJAX-DATA DOCS documents ! ;`);
 
-   : GREET
-       ." Hello!" LOG ;
+// Wraps item in an li and appends to doclist
+$f(`: ADD-DOC
+       LI doclist appendChild ;`);
 
-   : PAGE-DATA-URL
-       ." /api/page/sample1" ;
+// Renders |documents| into doclist
+$f(`: RENDER-DOCLIST
+       documents @  \` ADD-DOC MAP ;`);
 
-   : DOCS
-       ." docs" FIELD ;
+// Connects controls to their handlers
+$f(`: HOOK-UP-CONTROLS
+       howdy-ctrl click \` GREET addEventListener ;`);
 
-   : STORE-PAGE-DATA
-       AJAX-DATA DOCS documents ! ;
+// Handler for page data API call
+$f(`: RENDER-PAGE-DATA
+        STORE-PAGE-DATA
+        documents @ RENDER-DOCLIST
+        HOOK-UP-CONTROLS ;`);
 
-   : RENDER-DOCLIST
-       ." TODO: Implement this" LOG . ;
-   
-   : RENDER-PAGE-DATA
-       STORE-PAGE-DATA
-       documents @ RENDER-DOCLIST ;
+// Makes ajax call to get page data
+$f(`: GET-PAGE-DATA
+        PAGE-DATA-URL \` RENDER-PAGE-DATA  \` SHOW-AJAX-ERROR   HGET  ;`);
 
-   : RENDER-PAGE
-       howdy-ctrl click \` GREET   addEventListener
-       PAGE-DATA-URL \` RENDER-PAGE-DATA  \` SHOW-AJAX-ERROR   HGET  ;
-
-   document DOMContentLoaded \` RENDER-PAGE addEventListener
-   `);
+// Execute RENDER-PAGE when page is loaded
+$f('document DOMContentLoaded ` GET-PAGE-DATA addEventListener');

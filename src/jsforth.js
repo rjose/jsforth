@@ -606,6 +606,40 @@ $f.DefineWord("FIELD", function() {
 
 
 //------------------------------------------------------------------------------
+// Pops contents off stack, puts it into an li element and pushes back onto stack
+//------------------------------------------------------------------------------
+$f.DefineWord("LI", function() {
+    var contents = $f.stack.pop();
+    var element = document.createElement("li");
+    element.innerHTML = contents;
+    $f.stack.push(element);
+});
+
+
+//------------------------------------------------------------------------------
+// Pops parent and child off of stack and appends child to parent
+//------------------------------------------------------------------------------
+$f.DefineWord("appendChild", function() {
+    var parent = $f.stack.pop();
+    var child = $f.stack.pop();
+    parent.appendChild(child);
+});
+
+
+//------------------------------------------------------------------------------
+// Pops a word and a list of items off of stack and applies word to each item
+//------------------------------------------------------------------------------
+$f.DefineWord("MAP", function() {
+    var func = $f.stack.pop();
+    var items = $f.stack.pop();
+    for (var i=0; i < items.length; i++) {
+	$f.stack.push(items[i]);
+	$f(func);
+    }
+});
+
+
+//------------------------------------------------------------------------------
 // Pushes event names onto stack
 //------------------------------------------------------------------------------
 $f.DefineWord("DOMContentLoaded", function() {
