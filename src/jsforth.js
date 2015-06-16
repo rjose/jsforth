@@ -539,7 +539,6 @@ $f.DefineWord("addEventListener", function() {
 // Makes an XHR GET request
 //------------------------------------------------------------------------------
 $f.DefineWord("HGET", function() {
-    $f.ajax_response = {};                                  // Clear ajax response
     var handleFailure = $f.stack.pop();
     var handleSuccess = $f.stack.pop();
     var url = $f.stack.pop();
