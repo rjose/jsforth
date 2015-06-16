@@ -33,5 +33,5 @@ $f(`: RENDER-PAGE-DATA
 $f(`: GET-PAGE-DATA
         PAGE-DATA-URL \` RENDER-PAGE-DATA  \` SHOW-AJAX-ERROR   HGET  ;`);
 
-// Execute RENDER-PAGE when page is loaded
+// Execute GET-PAGE-DATA when page is loaded
 $f('document DOMContentLoaded ` GET-PAGE-DATA addEventListener');
