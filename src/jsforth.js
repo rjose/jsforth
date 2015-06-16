@@ -638,14 +638,19 @@ $f.DefineWord("MAP", function() {
     }
 });
 
-
 //------------------------------------------------------------------------------
-// Pushes event names onto stack
+// Pops a word and a list of items off of stack and applies word to each item
 //------------------------------------------------------------------------------
-$f.DefineWord("DOMContentLoaded", function() {
-    $f.stack.push("DOMContentLoaded");
+$f.DefineWord("CLEAR", function() {
+    var element = $f.stack.pop();
+    element.innerHTML = "";
 });
 
-$f.DefineWord("click", function() {
-    $f.stack.push("click");
-});
+
+//------------------------------------------------------------------------------
+// Event names
+//------------------------------------------------------------------------------
+$f(`
+   : DOMContentLoaded   ." DOMContentLoaded" ;
+   : click   ." click" ;
+   `);

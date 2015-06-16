@@ -15,16 +15,18 @@ $f(`: ADD-DOC
 
 // Renders |documents| into doclist
 $f(`: RENDER-DOCLIST
+       doclist CLEAR
        documents @  \` ADD-DOC MAP ;`);
 
 // Connects controls to their handlers
 $f(`: HOOK-UP-CONTROLS
+       howdy-ctrl click \` RENDER-DOCLIST addEventListener
        howdy-ctrl click \` GREET addEventListener ;`);
 
 // Handler for page data API call
 $f(`: RENDER-PAGE-DATA
         STORE-PAGE-DATA
-        documents @ RENDER-DOCLIST
+        RENDER-DOCLIST
         HOOK-UP-CONTROLS ;`);
 
 // Makes ajax call to get page data
