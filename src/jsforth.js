@@ -333,6 +333,26 @@ $f = (function makeInterpreter() {
 	    immediate: true
 	}
 
+	// Define comment
+	m_dictionary['#'] = {
+	    code: function() {
+
+		// Read chars up to '\n'
+		while(m_input_index < m_input.length) {
+		    // Read chars
+		    var ch = m_input[m_input_index];
+		    if (ch == '\n') {
+			m_input_index++;
+			break;
+		    }
+		    else {
+			m_input_index++;
+		    }
+		}
+	    },
+	    immediate: true
+	}
+
 
 	// Define "IF"
 	m_dictionary["IF"] = {
@@ -523,14 +543,14 @@ $f(': LOG . ;');
 //------------------------------------------------------------------------------
 $f.DefineWord("addEventListener", function() {
     // Get event, and element from the stack
-    var entryName = $f.stack.pop();
+    var handler = $f.stack.pop();
     var eventName = $f.stack.pop();
     var element = $f.stack.pop();
 
     // Add listener
     element.addEventListener(eventName, function(event) {
 	$f.event = event;                                   // Store latest event
-	$f(entryName);                                      // Execute the specified handler
+	$f(handler);                                        // Execute the specified handler
     });
 });
 
@@ -586,6 +606,14 @@ $f.DefineWord("document", function() {
 });
 
 //------------------------------------------------------------------------------
+// Pushes body element onto stack
+//------------------------------------------------------------------------------
+$f.DefineWord("body", function() {
+    $f.stack.push(document.body);
+});
+
+
+//------------------------------------------------------------------------------
 // Pushes document element onto stack
 //------------------------------------------------------------------------------
 $f.DefineWord("E", function() {
@@ -615,6 +643,33 @@ $f.DefineWord("LI", function() {
     $f.stack.push(element);
 });
 
+//------------------------------------------------------------------------------
+// Pops contents off stack, puts it into a div element and pushes back onto stack
+//------------------------------------------------------------------------------
+$f.DefineWord("OL", function() {
+    var element = document.createElement("ol");
+    $f.stack.push(element);
+});
+
+
+//------------------------------------------------------------------------------
+// Pops contents off stack, puts it into a div element and pushes back onto stack
+//------------------------------------------------------------------------------
+$f.DefineWord("DIV", function() {
+    var element = document.createElement("div");
+    $f.stack.push(element);
+});
+
+//------------------------------------------------------------------------------
+// Pops string and element, sets ID of element to be string, and pushes back on stack
+//------------------------------------------------------------------------------
+$f.DefineWord("ADD-ID", function() {
+    var id_string = $f.stack.pop();
+    var element = $f.stack.pop();
+    element.id = id_string;
+    $f.stack.push(element);
+});
+
 
 //------------------------------------------------------------------------------
 // Pops parent and child off of stack and appends child to parent
@@ -629,7 +684,7 @@ $f.DefineWord("appendChild", function() {
 //------------------------------------------------------------------------------
 // Pops a word and a list of items off of stack and applies word to each item
 //------------------------------------------------------------------------------
-$f.DefineWord("MAP", function() {
+$f.DefineWord("FOREACH", function() {
     var func = $f.stack.pop();
     var items = $f.stack.pop();
     for (var i=0; i < items.length; i++) {
@@ -639,12 +694,110 @@ $f.DefineWord("MAP", function() {
 });
 
 //------------------------------------------------------------------------------
-// Pops a word and a list of items off of stack and applies word to each item
+// Swaps order of top two stack elements
+//------------------------------------------------------------------------------
+$f.DefineWord("SWAP", function() {
+    var item2 = $f.stack.pop();
+    var item1 = $f.stack.pop();
+    $f.stack.push(item2);
+    $f.stack.push(item1);
+});
+
+//------------------------------------------------------------------------------
+// Concat two strings
+//------------------------------------------------------------------------------
+$f.DefineWord("CONCAT", function() {
+    var item2 = $f.stack.pop();
+    var item1 = $f.stack.pop();
+    var result = item1.concat(item2);
+    $f.stack.push(result);
+});
+
+
+//------------------------------------------------------------------------------
+// Sets innerHTML of element to ""
 //------------------------------------------------------------------------------
 $f.DefineWord("CLEAR", function() {
     var element = $f.stack.pop();
     element.innerHTML = "";
 });
+
+//------------------------------------------------------------------------------
+// Pops list of items and transfroms into hash from id -> item
+//------------------------------------------------------------------------------
+$f.DefineWord("HASHIFY", function() {
+    var items = $f.stack.pop();
+    var hash = {};
+    for (var i=0; i < items.length; i++) {
+	var id = items[i].id;
+	hash[id] = items[i];
+    }
+    $f.stack.push(hash);
+});
+
+//------------------------------------------------------------------------------
+// Pops list of items and converts into list of LI elements
+//------------------------------------------------------------------------------
+$f.DefineWord("LIs", function() {
+    var items = $f.stack.pop();
+    var result = [];
+    for (var i=0; i < items.length; i++) {
+	var li = document.createElement("li");
+	li.innerHTML = items[i];
+	result.push(li);
+    }
+    $f.stack.push(result);
+});
+
+//------------------------------------------------------------------------------
+// Appends each item in a list to a parent
+//------------------------------------------------------------------------------
+$f.DefineWord("APPEND-CHILDREN", function() {
+    var parent = $f.stack.pop();
+    var items = $f.stack.pop();
+    for (var i=0; i < items.length; i++) {
+	parent.appendChild(items[i]);
+    }
+    $f.stack.push(parent);
+});
+
+//------------------------------------------------------------------------------
+// Maps a function over a list of items
+//------------------------------------------------------------------------------
+$f.DefineWord("MAP", function() {
+    var func = $f.stack.pop();
+    var items = $f.stack.pop();
+    var result = [];
+    for (var i=0; i < items.length; i++) {
+	$f.stack.push(items[i]);
+	$f(func);
+	result.push($f.stack.pop());
+    }
+    $f.stack.push(result);
+});
+
+//------------------------------------------------------------------------------
+// Zips ids into elements and leaves elements on stack
+//------------------------------------------------------------------------------
+$f.DefineWord("ZIP-IDS", function() {
+    var elements = $f.stack.pop();
+    var ids = $f.stack.pop();
+    for (var i=0; i < elements.length; i++) {
+	elements[i].id = ids[i];
+    }
+    $f.stack.push(elements);
+});
+
+//------------------------------------------------------------------------------
+// Gets "id" from an object
+//------------------------------------------------------------------------------
+$f(': ID   ." id" FIELD ;');
+
+
+//------------------------------------------------------------------------------
+// Maps objects into their IDs
+//------------------------------------------------------------------------------
+$f(': IDs   ` ID MAP ;');
 
 
 //------------------------------------------------------------------------------
