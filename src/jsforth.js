@@ -801,6 +801,24 @@ $f(': IDs   ` ID MAP ;');
 
 
 //------------------------------------------------------------------------------
+// Adds handler to an element, leaving element on stack
+//------------------------------------------------------------------------------
+$f.DefineWord("ADD-HANDLER", function() {
+    var handler = $f.stack.pop();
+    var event = $f.stack.pop();
+    var element = $f.stack.pop();
+
+    // Make addEventListener call
+    $f.stack.push(element);
+    $f.stack.push(event);
+    $f.stack.push(handler);
+    $f('addEventListener');
+
+    // Push original element back
+    $f.stack.push(element);
+});
+
+//------------------------------------------------------------------------------
 // Event names
 //------------------------------------------------------------------------------
 $f(`

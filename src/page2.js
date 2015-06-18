@@ -13,7 +13,7 @@ $f(`: ADD-STRUCTURE
 
 $f(`: STORE-PAGE-DATA 
          AJAX-DATA ." items" FIELD  items !
-         items @ HASHIFY item-hash ! ;`);
+         items @ HASHIFY  item-hash ! ;`);
 
 $f(': NAME ." name" FIELD ;');
 $f(': NAMES ` NAME MAP ;');
@@ -24,11 +24,7 @@ $f.DefineWord("ITEM-HANDLER", function() {
     console.log("TODO: Implement ITEM-HANDLER", $f.event);
 });
 
-$f.DefineWord("ADD-ITEM-HANDLER", function() {
-    var element = $f.stack.pop();
-    $f.stack.push(element); $f('click ` ITEM-HANDLER addEventListener');
-    $f.stack.push(element);
-});
+$f(': ADD-ITEM-HANDLER   click ` ITEM-HANDLER ADD-HANDLER   ;');
 
 $f(`: LIST-ITEMS
          items @  IDs  \` ADD-ITEM-PREFIX MAP
