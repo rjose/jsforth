@@ -465,6 +465,32 @@ $f = (function makeInterpreter() {
 		return 0;
 	    }
 	};
+
+	// Define words for array construction
+	var START_ARRAY = {token: "START_ARRAY"}
+	m_dictionary["["] = {
+	    code: function() {
+		m_stack.push(START_ARRAY);
+	    }
+	}
+
+	m_dictionary["]"] = {
+	    code: function() {
+		var result = [];
+		while(1) {
+		    var item = m_stack.pop();
+		    if (item == START_ARRAY) {
+			break;
+		    }
+		    if (item === undefined) {
+			abort("Couldn't find start of array");
+			return -1;
+		    }
+		    result.unshift(item);
+		}
+		m_stack.push(result);
+	    }
+	}
     }
     define_builtins();
 
@@ -651,21 +677,30 @@ $f.DefineWord("LI", function() {
 });
 
 //------------------------------------------------------------------------------
-// Pops contents off stack, puts it into a div element and pushes back onto stack
+// Creates ol element
 //------------------------------------------------------------------------------
 $f.DefineWord("OL", function() {
     var element = document.createElement("ol");
     $f.stack.push(element);
 });
 
+//------------------------------------------------------------------------------
+// Creates ul element
+//------------------------------------------------------------------------------
+$f.DefineWord("UL", function() {
+    var element = document.createElement("ul");
+    $f.stack.push(element);
+});
+
 
 //------------------------------------------------------------------------------
-// Pops contents off stack, puts it into a div element and pushes back onto stack
+// Creates div element
 //------------------------------------------------------------------------------
 $f.DefineWord("DIV", function() {
     var element = document.createElement("div");
     $f.stack.push(element);
 });
+
 
 //------------------------------------------------------------------------------
 // Pops string and element, sets ID of element to be string, and pushes back on stack
@@ -708,6 +743,13 @@ $f.DefineWord("SWAP", function() {
     var item1 = $f.stack.pop();
     $f.stack.push(item2);
     $f.stack.push(item1);
+});
+
+//------------------------------------------------------------------------------
+// Drops top item from stack
+//------------------------------------------------------------------------------
+$f.DefineWord("DROP", function() {
+    $f.stack.pop();
 });
 
 //------------------------------------------------------------------------------

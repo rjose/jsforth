@@ -27,25 +27,36 @@ $f.DefineWord("DROP-PREFIX", function() {
     $f.stack.push(result);
 });
 
-$f.DefineWord("MAKE-DETAIL-VIEW", function() {
+function put_li_under(getContent) {
     var data = $f.stack.pop();
-    var ul = document.createElement("ul");
+    var result = document.createElement("li");
+    result.innerHTML = getContent(data);
+    $f.stack.push(result);
+    $f.stack.push(data);
+}
 
-    var li_name = document.createElement("li");
-    li_name.innerHTML = "Name: " + data.name;
-
-    var li_author = document.createElement("li");
-    li_author.innerHTML = "Author: " + data.author;
-
-
-    var li_size = document.createElement("li");
-    li_size.innerHTML = "Size: " + data.size;
-
-    ul.appendChild(li_name);
-    ul.appendChild(li_author);
-    ul.appendChild(li_size);
-    $f.stack.push(ul);
+$f.DefineWord("<LI-name", function() {
+    put_li_under(function(data) {
+	return "Name: " + data.name;
+    });
 });
+
+$f.DefineWord("<LI-author", function() {
+    put_li_under(function(data) {
+	return "Author: " + data.author;
+    });
+});
+
+$f.DefineWord("<LI-size", function() {
+    put_li_under(function(data) {
+	return "Size: " + data.size;
+    });
+});
+
+$f(`: MAKE-DETAIL-VIEW
+   [ SWAP <LI-name <LI-author <LI-size DROP ] UL APPEND-CHILDREN
+   ;`);
+
 
 $f(`: RENDER-DETAIL
    detail-view CLEAR
