@@ -28,6 +28,12 @@ def page1():
 def jsforth_js():
     return JSFORTH_JS
 
+@app.route('/jsforth.min.js')
+def jsforth_min_js():
+    result = read_file("jsforth.min.js")
+    return result
+        
+
 @app.route('/page1.js')
 def page1_js():
     JSFORTH_JS = read_file("jsforth.js")
@@ -38,6 +44,7 @@ def page1_js():
 @app.route('/page2.js')
 def page2_js():
     JSFORTH_JS = read_file("jsforth.js")
+    #JSFORTH_JS = read_file("jsforth.min.js")
     PAGE2_JS = read_file("page2.js")
     result = JSFORTH_JS + PAGE2_JS
     return result
