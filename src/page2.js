@@ -43,15 +43,13 @@ $f.DefineWord("<LI-size", function() {
 });
 
 $f(`: MAKE-DETAIL-VIEW
-   [ SWAP <LI-name <LI-author <LI-size DROP ] UL APPEND-CHILDREN
-   ;`);
+         [ SWAP <LI-name <LI-author <LI-size DROP ] UL APPEND-CHILDREN ;`);
 
 
 $f(`: RENDER-DETAIL
-   detail-view CLEAR
-   item-hash @ SWAP FIELD
-   MAKE-DETAIL-VIEW detail-view appendChild
-   ;`);
+         detail-view CLEAR
+         item-hash @ SWAP FIELD
+         MAKE-DETAIL-VIEW detail-view appendChild ;`);
 
 $f(`: ITEM-HANDLER   EVENT TARGET ID RENDER-DETAIL ;`);
 
