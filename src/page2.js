@@ -1,12 +1,12 @@
 $f(': PAGE-DATA-URL  ." /api/page/page2" ;');
 $f('VARIABLE items');
 $f('VARIABLE item-hash');
-
 $f(': LIST-VIEW   DIV ." list-view" ADD-ID ;');
 $f(': DETAIL-VIEW   DIV ." detail-view" ADD-ID ;');
-
 $f(': list-view ." list-view" E ;');
 $f(': detail-view ." detail-view" E ;');
+$f(': NAME   ." name" FIELD ;');
+$f(': NAMES   ` NAME MAP ;');
 
 $f(`: ADD-STRUCTURE
          LIST-VIEW body appendChild
@@ -15,17 +15,6 @@ $f(`: ADD-STRUCTURE
 $f(`: STORE-PAGE-DATA 
          AJAX-DATA ." items" FIELD  items !
          items @ HASHIFY  item-hash ! ;`);
-
-$f(': NAME   ." name" FIELD ;');
-$f(': NAMES   ` NAME MAP ;');
-
-$f(': ADD-ITEM-PREFIX  ." item-" SWAP CONCAT  ;');
-$f.DefineWord("DROP-PREFIX", function() {
-    var item = $f.stack.pop();
-    var pieces = item.split('-');
-    var result = pieces[pieces.length-1];
-    $f.stack.push(result);
-});
 
 function put_li_under(getContent) {
     var data = $f.stack.pop();
@@ -60,17 +49,16 @@ $f(`: MAKE-DETAIL-VIEW
 
 $f(`: RENDER-DETAIL
    detail-view CLEAR
-   DROP-PREFIX item-hash @ SWAP FIELD
+   item-hash @ SWAP FIELD
    MAKE-DETAIL-VIEW detail-view appendChild
    ;`);
 
 $f(`: ITEM-HANDLER   EVENT TARGET ID RENDER-DETAIL ;`);
 
-
 $f(': ADD-ITEM-HANDLER   click ` ITEM-HANDLER ADD-HANDLER   ;');
 
 $f(`: LIST-ITEMS
-         items @  IDs  \` ADD-ITEM-PREFIX MAP
+         items @  IDs
          items @  NAMES LIs
          ZIP-IDS
          \` ADD-ITEM-HANDLER MAP ;`);
